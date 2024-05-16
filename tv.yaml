@@ -1,0 +1,98 @@
+mixed-port: 7890
+allow-lan: false
+tcp-concurrent: true
+find-process-mode: always
+global-client-fingerprint: random
+geodata-mode: false
+geodata-loader: memconservative
+mode: rule
+log-level: error
+ipv6: true
+external-controller: 127.0.0.1:9090
+profile:
+  store-selected: false
+  store-fake-ip: true
+
+dns:
+  enable: true
+  ipv6: true
+  prefer-h3: true
+  default-nameserver: 
+    - '127.0.0.1'
+    - '1.1.1.1'
+  enhanced-mode: fake-ip
+  use-hosts: true
+  nameserver:
+    - '127.0.0.1'
+    - '1.1.1.1'
+  fallback:
+    - "https://dns.adguard-dns.com/dns-query"
+    - "https://dns.controld.com/comss"
+  fallback-filter:
+    geoip: false
+#    geoip-code:  RU
+    
+proxy-groups:
+
+- name: global
+  type: select
+  proxies:
+    - auto
+    - manual
+    - DIRECT
+    - REJECT
+
+- name: manual
+  type: select
+  use:
+    - aggregator
+
+- name: auto
+  type: url-test
+  filter: 'Q|W|E|V|T|Y|I|O|P|A|S|D|F|G|H|J|K|L|M|N|B|C|X|Z|RELAY'
+  use:
+    - aggregator
+
+proxy-providers:
+  
+  aggregator:
+    type: http
+    url: "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/update/provider/provider-all.yml"
+    interval: 86400
+    path: ./providers/aggregator.yaml
+    health-check:
+      enable: true
+      interval: 1800
+      lazy: true
+      url: "https://cp.cloudflare.com"
+      
+rule-providers:
+
+  private:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt"
+    path: ./ruleset/private.yaml
+    interval: 86400
+
+  lancidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt"
+    path: ./ruleset/lancidr.yaml
+    interval: 86400
+ 
+rules:
+  - RULE-SET,private,DIRECT
+  - RULE-SET,lancidr,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,ip6-localhost,DIRECT
+  - DOMAIN-SUFFIX,ip6-loopback,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - DOMAIN-SUFFIX,localhost,DIRECT
+  - PROCESS-NAME,ru.mts.mtstv,DIRECT
+  - PROCESS-NAME,ru.rt.video.app.tv,DIRECT
+  - PROCESS-NAME,org.kde.kdeconnec2_tp,DIRECT
+  - GEOIP,private,DIRECT
+  - MATCH,global
+  - DOMAIN,yacd.metacubex.one,DIRECT
